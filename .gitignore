@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# prisma
+.prisma
+prisma/migrations
+
+# logs
+*.log
+# prisma generated client (do not commit)
+lib/generated/prisma
+
+# backups
+*.bak
