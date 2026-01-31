@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { UserTypeSelection } from "./UserTypeForm";
 import { CompanyForm } from "./CompanyForm";
+import { JobSeekerForm } from "./JobSeekerForm";
 
 type UserSelectionType = 'company' | 'jobSeeker' | null;
 
@@ -24,9 +25,10 @@ function renderStep() {
             return <UserTypeSelection onSelect={handleuserTypeSelection} />
 
             case 2:
-                return userType === "company" ? ( <CompanyForm />
+                return userType === "company" ? ( 
+                <CompanyForm />
      ) : (
-     <p>User is a job seeker</p>
+     <JobSeekerForm />
      );
 
      default:

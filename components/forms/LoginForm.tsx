@@ -287,7 +287,7 @@ export  async function LoginForm() {
                         <form action={async () =>{
                             "use server";
                             await signIn("github", {
-                                redirectTo: "/",
+                                redirectTo: "/onboarding",
                             })
                         }}>
                            {/*<Button className="w-full" variant="outline">
@@ -302,7 +302,7 @@ export  async function LoginForm() {
                             "use server";
 
                             await signIn("google", {
-                                redirectTo: '/',
+                                redirectTo: '/onboarding',
                             });
                         }}>
                             <GeneralSubmitButtons width="w-full" variant="outline" text="Login with Google"
