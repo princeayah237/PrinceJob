@@ -52,3 +52,6 @@ lib/generated/prisma
 
 # backups
 *.bak
+
+*.exe
+

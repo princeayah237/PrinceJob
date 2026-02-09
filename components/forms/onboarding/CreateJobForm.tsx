@@ -1,28 +1,46 @@
 "use client"
+import { createJob } from "@/app/action";
 import { countryList } from "@/app/utils/countriesList";
 import { JobSchema } from "@/app/utils/zodSchemas";
 import { BenefitsSelector } from "@/components/general/BenefitsSelector";
+import { JobListingDuration } from "@/components/general/JobListingDurationSelector";
 import { SalaryRangeSelector } from "@/components/general/SalaryRangeSelector";
+import { UploadDropzone } from "@/components/general/UploadThingReexported";
 import { JobDescriptionEditor } from "@/components/richTextEditor.tsx/JobDescriptionEditor";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { XIcon } from "lucide-react";
+import Image from "next/image";
+import { use, useState } from "react";
 import { useForm } from "react-hook-form";
-import {z} from 'zod'
+import {set, z} from 'zod'
 
-export function CreateJobForm() {
+
+interface iAppProps {
+    companyLocation: string;
+    companyName: string;
+    companyAbout: string;
+    companyLogo: string;
+    companyWebsite: string;
+    companyXAccount: string | null;
+}
+
+export function CreateJobForm({companyLocation, companyName, companyAbout, companyLogo, companyWebsite, companyXAccount}: iAppProps) {
     const form = useForm<z.infer<typeof JobSchema>>({
         resolver: zodResolver(JobSchema),
         defaultValues: {
 benefits: [],
-companyAbout: '',
-companyLocation: '',
-companyLogo: '',
-companyName: '',
-companyWebsite: '',
-companyXAccount: '',
+companyAbout: companyAbout,
+companyLocation: companyLocation,
+companyLogo: companyLogo,
+companyName: companyName,
+companyWebsite: companyWebsite,
+companyXAccount: companyXAccount || "",
 employmentType: '',
 JobDescription: '',
 jobTitle: '',
@@ -33,13 +51,29 @@ salaryTo: 0,
 
         },
     });
+
+    const [pending, setPending] = useState(false);
+
+    async function onSubmit(values: z.infer<typeof JobSchema>) {
+       try {
+        setPending(true);
+        await createJob(values);
+
+       } catch(error) {
+        if (error instanceof Error && error.message !== 'NEXT_REDIRECT') {
+                console.log("something went wrong");
+       }
+    } finally {
+        setPending(false);
+    }
+    }
     return <Form {...form}>
-        <form className="col-span-1 lg:col-span-2 flex-col gap-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="col-span-1 lg:col-span-2 flex-col gap-8">
             <Card>
                 <CardHeader>
                     <CardTitle>Job Information</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 <FormField
 control={form.control}
@@ -97,7 +131,7 @@ render={({field}) => (
     >
 <FormControl>
     <SelectTrigger>
-        <SelectValue placeholder="Select Locaation" />
+        <SelectValue placeholder="Select Location" />
     </SelectTrigger>
 </FormControl>
 <SelectContent>
@@ -162,7 +196,7 @@ render={({ field }) => (
 <FormItem>
     <FormLabel>Benefits</FormLabel>
     <FormControl>
-       <BenefitsSelector />
+       <BenefitsSelector field={field as any} />
     </FormControl>
     <FormMessage />
 </FormItem>
@@ -170,7 +204,186 @@ render={({ field }) => (
 />
                 </CardContent>
             </Card>
+<Card>
+    <CardHeader>
+        <CardTitle>Company Information</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField 
+            control={form.control}
+            name="companyName"
+            render={({field}) => (
+                <FormItem>
+                    <FormLabel>Company name</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Company name..." {...field}  />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+            />
 
+<FormField
+control={form.control}
+name="companyLocation"
+render={({field}) => (
+<FormItem>
+    <FormLabel>Company Location</FormLabel>
+    <Select onValueChange={field.onChange}
+    defaultValue={field.value}
+    >
+<FormControl>
+    <SelectTrigger>
+        <SelectValue placeholder="Select Location" />
+    </SelectTrigger>
+</FormControl>
+<SelectContent>
+    <SelectGroup>
+        <SelectLabel>Worldwide</SelectLabel>
+        <SelectItem value="worldwide">
+            <span>🌍</span>
+            <span className="pl-2">Worldwide / Remote</span>
+        </SelectItem>
+    </SelectGroup>
+    <SelectGroup>
+        <SelectLabel>Location</SelectLabel>
+        {countryList.map((country) => (
+            <SelectItem key={country.code} value={country.name}>
+                <span>{country.flagEmoji}</span>
+                <span className="pl-2">{country.name}</span>
+
+            </SelectItem>
+        ))}
+    </SelectGroup>
+</SelectContent>
+    </Select>
+    <FormMessage />
+</FormItem>
+)}
+/>
+
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField 
+            control={form.control}
+            name="companyWebsite"
+            render={({field}) => (
+                <FormItem>
+                    <FormLabel>Company Website</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Company Website..." {...field}  />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+            />
+
+            <FormField 
+            control={form.control}
+            name="companyXAccount"
+            render={({field}) => (
+                <FormItem>
+                    <FormLabel>Company XAccount</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Company XAccount" {...field}  />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+            />
+
+        </div>
+
+        <FormField 
+            control={form.control}
+            name="companyAbout"
+            render={({field}) => (
+                <FormItem>
+                    <FormLabel>Company Description</FormLabel>
+                    <FormControl>
+                        <Textarea placeholder="Write something about your company " {...field}
+                        className="min-h-30"  />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+            />
+
+            <FormField
+                                control={form.control}
+                                name="companyLogo"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Company Logo</FormLabel>
+                                        <FormControl>
+                                            <div>{field.value ? (
+                                                <div className="relative w-fit">
+                                                    <Image src={field.value} alt="Company Logo" width={100} height={100
+                                                    } className="rounded-lg" />
+                                                    <Button type="button"
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        className="absolute -top-2 -right-2"
+                                                        onClick={() => field.onChange("")}
+                                                    >
+                                                        <XIcon className="size-4" />
+                                                    </Button>
+                                                </div>
+                                            ) : (
+            
+                                                <UploadDropzone
+                                                    endpoint="imageUploader"
+                                                    onClientUploadComplete={(res) => {
+                                                        field.onChange(res[0].url)
+                                                    }}
+                                                    onUploadError={() => {
+                                                        console.log("something went wrong");
+                                                    }}
+                                                    appearance={{
+                                                        button: "!bg-primary !text-white hover:!bg-primary/90",
+                                                        label: "!text-muted-foreground",
+                                                        allowedContent: "!text-muted-foreground",
+                                                        container: "!border-primary"
+                                                    }}
+                                                />
+            
+                                            )}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+    </CardContent>
+</Card>
+
+<Card>
+    <CardHeader>
+        <CardTitle>Job Listing Duration</CardTitle>
+    </CardHeader>
+    <CardContent>
+        <FormField
+        control={form.control}
+        name="listingDuration"
+        render={({field}) => (
+            <FormItem>
+                <FormControl>
+                    <JobListingDuration field={field as any} />
+                </FormControl>
+                <FormMessage />
+
+            </FormItem>
+        )}
+        
+        />
+    </CardContent>
+</Card>
+
+<Button type="submit" className="w-full" disabled={pending}>
+    {pending ? "Submitting..." : "Create Job Post"}
+</Button>
         </form>
 
         </Form>;
