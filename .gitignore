@@ -55,3 +55,7 @@ lib/generated/prisma
 
 *.exe
 
+*.exe
+node_modules/
+.DS_Store
+
